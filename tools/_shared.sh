@@ -18,12 +18,12 @@ TOOLS_ROOT=`pwd`
 # So you can build openssl with android-16 then build cURL with android-21
 #
 if [ "${1}" == "cURL" ]; then
-    ANDROID_API=${ANDROID_API:-21}
+    ANDROID_API=${ANDROID_API:-19}
 else
-    ANDROID_API=${ANDROID_API:-16}
+    ANDROID_API=${ANDROID_API:-19}
 fi
-ARCHS=("android" "android-armeabi" "android-x86" "android-mips")
-ABIS=("armeabi" "armeabi-v7a" "x86" "mips")
+ARCHS=("android" "android-armeabi" "android64-aarch64" "android-x86" "android64")
+ABIS=("armeabi" "armeabi-v7a" "arm64-v8a" "x86" "x86_64")
 # ANDROID_API=${ANDROID_API:-21}
 # ARCHS=("android" "android-armeabi" "android64-aarch64" "android-x86" "android64" "android-mips" "android-mips64")
 # ABIS=("armeabi" "armeabi-v7a" "arm64-v8a" "x86" "x86_64" "mips" "mips64")
@@ -49,6 +49,7 @@ configure() {
     export ARCH_LINK=""
     export TOOL="aarch64-linux-android"
     NDK_FLAGS="--arch=arm64"
+    ANDROID_API=21
   elif [ "$ARCH" == "android-x86" ]; then
     export ARCH_FLAGS="-march=i686 -mtune=intel -msse3 -mfpmath=sse -m32"
     export ARCH_LINK=""
@@ -59,6 +60,7 @@ configure() {
     export ARCH_LINK=""
     export TOOL="x86_64-linux-android"
     NDK_FLAGS="--arch=x86_64"
+    ANDROID_API=21
   elif [ "$ARCH" == "android-mips" ]; then
     export ARCH_FLAGS=""
     export ARCH_LINK=""
@@ -70,8 +72,9 @@ configure() {
     export ARCH_LINK=""
     export TOOL="mips64el-linux-android"
     NDK_FLAGS="--arch=mips64"
+    ANDROID_API=21
   fi;
-
+  echo 'gen standalone toolchain--'
   [ -d ${TOOLCHAIN_ROOT} ] || python $NDK/build/tools/make_standalone_toolchain.py \
                                      --api ${ANDROID_API} \
                                      --stl libc++ \

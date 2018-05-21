@@ -20,40 +20,55 @@ source ./_shared.sh cURL
 
 # Setup architectures, library name and other vars + cleanup from previous runs
 TOOLS_ROOT=`pwd`
-LIB_NAME="curl-7.54.1"
+LIB_NAME="curl-7.57.0"
 LIB_DEST_DIR=${TOOLS_ROOT}/libs
 [ -f ${LIB_NAME}.tar.gz ] || wget https://curl.haxx.se/download/${LIB_NAME}.tar.gz
 # Unarchive library, then configure and make for specified architectures
+if [ ! -d "${LIB_NAME}" ];then
+  tar xfz "${LIB_NAME}.tar.gz"
+fi
 configure_make() {
   ARCH=$1; ABI=$2;
-  [ -d "${LIB_NAME}" ] && rm -rf "${LIB_NAME}"
-  tar xfz "${LIB_NAME}.tar.gz"
+  #[ -d "${LIB_NAME}" ] && rm -rf "${LIB_NAME}"
+  #tar xfz "${LIB_NAME}.tar.gz"
   pushd "${LIB_NAME}";
 
   configure $*
+
+  export CPPFLAGS="${CPPFLAGS} -I${TOOLS_ROOT}/../output/android/openssl-${ABI}/include/"
+  export LDFLAGS="${LDFLAGS} -L${TOOLS_ROOT}/../output/android/openssl-${ABI}/lib/"
+  export CFLAGS="${CFLAGS} -UHAVE_GETPWUID_R"
   # fix me
-  cp ${TOOLS_ROOT}/../output/android/openssl-${ABI}/lib/libssl.a ${SYSROOT}/usr/lib
-  cp ${TOOLS_ROOT}/../output/android/openssl-${ABI}/lib/libcrypto.a ${SYSROOT}/usr/lib
-  cp -r ${TOOLS_ROOT}/../output/android/openssl-${ABI}/include/openssl ${SYSROOT}/usr/include
+  #cp ${TOOLS_ROOT}/../output/android/openssl-${ABI}/lib/libssl.a ${SYSROOT}/usr/lib
+  #cp ${TOOLS_ROOT}/../output/android/openssl-${ABI}/lib/libcrypto.a ${SYSROOT}/usr/lib
+  #cp -r ${TOOLS_ROOT}/../output/android/openssl-${ABI}/include/openssl ${SYSROOT}/usr/include
 
   mkdir -p ${LIB_DEST_DIR}/${ABI}
-  ./configure --prefix=${LIB_DEST_DIR}/${ABI} \
-              --with-sysroot=${SYSROOT} \
-              --host=${TOOL} \
-              --with-ssl=/usr \
-              --enable-ipv6 \
-              --enable-static \
-              --enable-threaded-resolver \
-              --disable-dict \
-              --disable-gopher \
-              --disable-ldap --disable-ldaps \
-              --disable-manual \
-              --disable-pop3 --disable-smtp --disable-imap \
-              --disable-rtsp \
-              --disable-shared \
-              --disable-smb \
-              --disable-telnet \
-              --disable-verbose
+ # ./configure --prefix=${LIB_DEST_DIR}/${ABI} \
+ #             --with-sysroot=${SYSROOT} \
+ #             --host=${TOOL} \
+ #             #--with-ssl \
+ #             --enable-ipv6 \
+ #             --enable-static \
+ #             --enable-threaded-resolver \
+ #             --disable-dict \
+ #             --disable-gopher \
+ #             --disable-ldap --disable-ldaps \
+ #             --disable-manual \
+ #             --disable-pop3 --disable-smtp --disable-imap \
+ #             --disable-rtsp \
+ #             --disable-shared \
+ #             --disable-smb \
+ #             --disable-telnet \
+ #             --disable-verbose
+#
+  if [ -f lib/curl_config.h ];then
+    #getpwuid_r not defined,so undef HAVE_GETPWUID_R
+    GETPWUID_R=`grep 'HAVE_GETPWUID_R' lib/curl_config.h`
+    sed -i "s/${GETPWUID_R}/#undef HAVE_GETPWUID_R/g" lib/curl_config.h
+    grep 'HAVE_GETPWUID_R' lib/curl_config.h
+  fi
+     
   PATH=$TOOLCHAIN_PATH:$PATH
   make clean
   if make -j4
@@ -73,7 +88,7 @@ configure_make() {
 for ((i=0; i < ${#ARCHS[@]}; i++))
 do
   if [[ $# -eq 0 ]] || [[ "$1" == "${ARCHS[i]}" ]]; then
-    [[ ${ANDROID_API} < 21 ]] && ( echo "${ABIS[i]}" | grep 64 > /dev/null ) && continue;
+    [[ ${ANDROID_API} < 16 ]] && ( echo "${ABIS[i]}" | grep 64 > /dev/null ) && continue;
     configure_make "${ARCHS[i]}" "${ABIS[i]}"
   fi
 done

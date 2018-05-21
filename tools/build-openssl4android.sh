@@ -16,18 +16,21 @@
 
 set -u
 
-source ./_shared.sh
+source ./_shared.sh openssl
 
 # Setup architectures, library name and other vars + cleanup from previous runs
-LIB_NAME="openssl-1.1.0f"
+LIB_NAME="openssl-1.1.0g"
 LIB_DEST_DIR=${TOOLS_ROOT}/libs
-[ -d ${LIB_DEST_DIR} ] && rm -rf ${LIB_DEST_DIR}
+#[ -d ${LIB_DEST_DIR} ] && rm -rf ${LIB_DEST_DIR}
 [ -f "${LIB_NAME}.tar.gz" ] || wget https://www.openssl.org/source/${LIB_NAME}.tar.gz;
 # Unarchive library, then configure and make for specified architectures
+if [ ! -d ${LIB_NAME} ];then
+  tar xfz "${LIB_NAME}.tar.gz"
+fi
 configure_make() {
   ARCH=$1; ABI=$2;
-  rm -rf "${LIB_NAME}"
-  tar xfz "${LIB_NAME}.tar.gz"
+  #rm -rf "${LIB_NAME}"
+  #tar xfz "${LIB_NAME}.tar.gz"
   pushd "${LIB_NAME}"
 
   configure $*
@@ -77,7 +80,7 @@ do
   if [[ $# -eq 0 ]] || [[ "$1" == "${ARCHS[i]}" ]]; then
     # Do not build 64 bit arch if ANDROID_API is less than 21 which is
     # the minimum supported API level for 64 bit.
-    [[ ${ANDROID_API} < 21 ]] && ( echo "${ABIS[i]}" | grep 64 > /dev/null ) && continue;
+    [[ ${ANDROID_API} < 16 ]] && ( echo "${ABIS[i]}" | grep 64 > /dev/null ) && continue;
     configure_make "${ARCHS[i]}" "${ABIS[i]}"
   fi
 done
