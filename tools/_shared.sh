@@ -60,7 +60,7 @@ configure() {
     export ARCH_LINK=""
     export TOOL="x86_64-linux-android"
     NDK_FLAGS="--arch=x86_64"
-    ANDROID_API=21
+    ANDROID_API=19
   elif [ "$ARCH" == "android-mips" ]; then
     export ARCH_FLAGS=""
     export ARCH_LINK=""

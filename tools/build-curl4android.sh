@@ -44,24 +44,24 @@ configure_make() {
   #cp -r ${TOOLS_ROOT}/../output/android/openssl-${ABI}/include/openssl ${SYSROOT}/usr/include
 
   mkdir -p ${LIB_DEST_DIR}/${ABI}
- # ./configure --prefix=${LIB_DEST_DIR}/${ABI} \
- #             --with-sysroot=${SYSROOT} \
- #             --host=${TOOL} \
- #             #--with-ssl \
- #             --enable-ipv6 \
- #             --enable-static \
- #             --enable-threaded-resolver \
- #             --disable-dict \
- #             --disable-gopher \
- #             --disable-ldap --disable-ldaps \
- #             --disable-manual \
- #             --disable-pop3 --disable-smtp --disable-imap \
- #             --disable-rtsp \
- #             --disable-shared \
- #             --disable-smb \
- #             --disable-telnet \
- #             --disable-verbose
-#
+  ./configure --prefix=${LIB_DEST_DIR}/${ABI} \
+              --with-sysroot=${SYSROOT} \
+              --host=${TOOL} \
+              --enable-ipv6 \
+              --enable-static \
+              --enable-shared=no \
+              --enable-threaded-resolver \
+              --disable-dict \
+              --disable-gopher \
+              --disable-ldap --disable-ldaps \
+              --disable-manual \
+              --disable-pop3 --disable-smtp --disable-imap \
+              --disable-rtsp \
+              --disable-shared \
+              --disable-smb \
+              --disable-telnet \
+              --disable-verbose
+
   if [ -f lib/curl_config.h ];then
     #getpwuid_r not defined,so undef HAVE_GETPWUID_R
     GETPWUID_R=`grep 'HAVE_GETPWUID_R' lib/curl_config.h`
